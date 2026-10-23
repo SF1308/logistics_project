@@ -1,0 +1,55 @@
+<section class="orders-section" aria-labelledby="orders-title">
+    <div class="section-heading">
+        <div>
+            <h2 id="orders-title">Órdenes de retiro</h2>
+            <p>Órdenes registradas en el sistema.</p>
+        </div>
+
+        {% if orders %}
+            <span class="order-count" aria-label="{{ orders|length }} órdenes">
+                {{ orders|length }}
+            </span>
+        {% endif %}
+    </div>
+
+    {% if orders %}
+        <ul class="orders-list">
+            {% for order in orders %}
+                <li class="order-card">
+                    <div class="order-card-heading">
+                        <div>
+                            <h3>{{ order.internal_id }}</h3>
+                            <p class="order-requester">Solicita: {{ order.requester }}</p>
+                        </div>
+
+                        <span class="status-badge">{{ order.get_status_display }}</span>
+                    </div>
+
+                    <dl class="order-details">
+                        <div>
+                            <dt>Tipo de servicio</dt>
+                            <dd>{{ order.service_type }}</dd>
+                        </div>
+                        <div>
+                            <dt>Cantidad de bultos</dt>
+                            <dd>{{ order.package_count }}</dd>
+                        </div>
+                        <div>
+                            <dt>Creada</dt>
+                            <dd>{{ order.created_at }}</dd>
+                        </div>
+                    </dl>
+
+                    {% if order.notes %}
+                        <p class="order-notes"><strong>Observaciones:</strong> {{ order.notes }}</p>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="empty-state">
+            <h3>Aún no hay órdenes</h3>
+            <p>Cuando registres una orden, aparecerá aquí.</p>
+        </div>
+    {% endif %}
+</section>

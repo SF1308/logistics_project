@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Órdenes logísticas{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'orders/styles.css' %}">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a class="brand" href="{% url 'orders:order_page' %}">
+                Gestión logística
+            </a>
+        </div>
+    </header>
+
+    <main class="container page-content">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

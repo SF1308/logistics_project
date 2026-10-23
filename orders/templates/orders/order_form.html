@@ -1,0 +1,80 @@
+<section class="panel" aria-labelledby="order-form-title">
+    <h2 id="order-form-title">Nueva orden de retiro</h2>
+
+    <form method="post" class="order-form">
+        {% csrf_token %}
+
+        <div class="field">
+            <label for="requester">Quién solicita</label>
+            <input
+                type="text"
+                id="requester"
+                name="requester"
+                maxlength="200"
+                value="{{ values.requester|default:'' }}"
+                {% if errors.requester %}aria-invalid="true" aria-describedby="requester-error"{% endif %}
+                required
+            >
+            {% if errors.requester %}
+                <p class="field-error" id="requester-error">{{ errors.requester }}</p>
+            {% endif %}
+        </div>
+
+        <div class="field">
+            <label for="internal_id">Identificador interno</label>
+            <input
+                type="text"
+                id="internal_id"
+                name="internal_id"
+                maxlength="100"
+                value="{{ values.internal_id|default:'' }}"
+                {% if errors.internal_id %}aria-invalid="true" aria-describedby="internal-id-error"{% endif %}
+                required
+            >
+            {% if errors.internal_id %}
+                <p class="field-error" id="internal-id-error">{{ errors.internal_id }}</p>
+            {% endif %}
+        </div>
+
+        <div class="field">
+            <label for="service_type">Tipo de servicio</label>
+            <input
+                type="text"
+                id="service_type"
+                name="service_type"
+                maxlength="100"
+                value="{{ values.service_type|default:'' }}"
+                {% if errors.service_type %}aria-invalid="true" aria-describedby="service-type-error"{% endif %}
+                required
+            >
+            {% if errors.service_type %}
+                <p class="field-error" id="service-type-error">{{ errors.service_type }}</p>
+            {% endif %}
+        </div>
+
+        <div class="field">
+            <label for="package_count">Cantidad de bultos</label>
+            <input
+                type="number"
+                id="package_count"
+                name="package_count"
+                min="1"
+                value="{{ values.package_count|default:'' }}"
+                {% if errors.package_count %}aria-invalid="true" aria-describedby="package-count-error"{% endif %}
+                required
+            >
+            {% if errors.package_count %}
+                <p class="field-error" id="package-count-error">{{ errors.package_count }}</p>
+            {% endif %}
+        </div>
+
+        <div class="field field-wide">
+            <label for="notes">Observaciones <span>(opcional)</span></label>
+            <textarea id="notes" name="notes" rows="4">{{ values.notes|default:'' }}</textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit">Crear orden</button>
+        </div>
+    </form>
+</section>

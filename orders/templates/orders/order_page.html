@@ -1,0 +1,14 @@
+{% extends "orders/base.html" %}
+
+{% block title %}Órdenes de retiro{% endblock %}
+
+{% block content %}
+    <header class="page-heading">
+        <p class="eyebrow">Gestión logística</p>
+        <h1>Órdenes de retiro</h1>
+        <p class="subtitle">Registrá y consultá las órdenes de retiro.</p>
+    </header>
+
+    {% include "orders/order_form.html" %}
+    {% include "orders/order_list.html" %}
+{% endblock %}
