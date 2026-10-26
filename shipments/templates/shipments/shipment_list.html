@@ -1,0 +1,47 @@
+{% extends "orders/base.html" %}
+
+{% block title %}Envíos de {{ company.name }}{% endblock %}
+
+{% block content %}
+    <header class="page-heading">
+        <p class="eyebrow">Seguimiento</p>
+        <h1>Envíos de {{ company.name }}</h1>
+        <p class="subtitle">Los más urgentes primero y, a igual prioridad, los más antiguos.</p>
+    </header>
+
+    {% if shipments %}
+        <ul class="orders-list">
+            {% for shipment in shipments %}
+                <li class="order-card">
+                    <div class="order-card-heading">
+                        <div>
+                            <h3>{{ shipment.code }}</h3>
+                            <p class="order-requester">Destinatario: {{ shipment.recipient }}</p>
+                        </div>
+                        <span class="status-badge">{{ shipment.get_status_display }}</span>
+                    </div>
+
+                    <dl class="order-details">
+                        <div>
+                            <dt>Prioridad</dt>
+                            <dd>{{ shipment.get_priority_display }}</dd>
+                        </div>
+                        <div>
+                            <dt>Destino</dt>
+                            <dd>{{ shipment.destination_address }}</dd>
+                        </div>
+                        <div>
+                            <dt>Creado</dt>
+                            <dd>{{ shipment.created_at }}</dd>
+                        </div>
+                    </dl>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="empty-state">
+            <h3>Sin envíos</h3>
+            <p>Esta empresa todavía no tiene envíos registrados.</p>
+        </div>
+    {% endif %}
+{% endblock %}
