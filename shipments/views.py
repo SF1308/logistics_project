@@ -1,6 +1,13 @@
-from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
-from django.views.decorators.http import require_GET
+from django.http import HttpResponseBadRequest, JsonResponse
+from django.views.decorators.http import require_GET, require_POST
+
+from .services import (
+    DispatchFailed,
+    InvalidShipmentState,
+    ShipmentNotFound,
+    confirm_dispatch,
+)
 
 from .models import Company, Shipment
 
@@ -50,4 +57,26 @@ def shipment_list_by_company(request):
             "company": company,
             "shipments": shipments,
         },
+    )
+
+@require_POST
+def confirm_shipment_dispatch(request, shipment_id):
+    try:
+        result = confirm_dispatch(shipment_id)
+        print(f"Despacho confirmado: {result.shipment_code} (movimiento {result.movement_id})")
+    except ShipmentNotFound as exc:
+        return JsonResponse({"confirmado": False, "motivo": str(exc)}, status=404)
+    except InvalidShipmentState as exc:
+        return JsonResponse({"confirmado": False, "motivo": str(exc)}, status=409)
+    except DispatchFailed as exc:
+        return JsonResponse({"confirmado": False, "motivo": str(exc)}, status=500)
+
+    return JsonResponse(
+        {
+            "envio": result.shipment_code,
+            "estado_anterior": result.previous_status,
+            "estado_nuevo": result.new_status,
+            "movimiento_creado": result.movement_id,
+            "confirmado": True,
+        }
     )

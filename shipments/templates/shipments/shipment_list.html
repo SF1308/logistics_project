@@ -35,6 +35,21 @@
                             <dd>{{ shipment.created_at }}</dd>
                         </div>
                     </dl>
+
+                    {% comment %}
+                        El botón se muestra siempre, aunque el envío no se pueda despachar.
+                        Es a propósito: la regla "solo se despacha desde En depósito" vive
+                        únicamente en shipments/services.py (DISPATCHABLE_FROM). Si la
+                        copiáramos acá, habría dos lugares para mantener. Si el envío no
+                        es despachable, el servicio responde 409 y el motivo se muestra
+                        en esta misma tarjeta.
+                    {% endcomment %}
+                    <form class="dispatch-form" method="post"
+                          action="{% url 'shipments:confirm_dispatch' shipment.id %}">
+                        {% csrf_token %}
+                        <button type="submit">Confirmar despacho</button>
+                        <p class="dispatch-message" role="status"></p>
+                    </form>
                 </li>
             {% endfor %}
         </ul>
@@ -44,4 +59,42 @@
             <p>Esta empresa todavía no tiene envíos registrados.</p>
         </div>
     {% endif %}
+
+    {% comment %}
+        Envía el POST con fetch para no salir de la página (la view responde JSON).
+        El token CSRF se lee del input oculto que genera {% csrf_token %} y viaja en
+        el header X-CSRFToken. Si el despacho se confirma, se recarga la página para
+        mostrar el estado real que renderiza el servidor; si no, se muestra el motivo.
+    {% endcomment %}
+    <script>
+        document.querySelectorAll(".dispatch-form").forEach((form) => {
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                const button = form.querySelector("button");
+                const message = form.querySelector(".dispatch-message");
+                button.disabled = true;
+                message.textContent = "";
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": form.querySelector("[name=csrfmiddlewaretoken]").value,
+                        },
+                    });
+                    const data = await response.json();
+
+                    if (data.confirmado) {
+                        window.location.reload();
+                    } else {
+                        message.textContent = data.motivo;
+                        button.disabled = false;
+                    }
+                } catch (error) {
+                    message.textContent = "No se pudo contactar al servidor.";
+                    button.disabled = false;
+                }
+            });
+        });
+    </script>
 {% endblock %}
