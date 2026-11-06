@@ -1,7 +1,9 @@
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
+from django.core.paginator import Paginator
 
+from .forms import BoardFilterForm, ORDERINGS, DEFAULT_ORDER
 from .services import (
     DispatchFailed,
     InvalidShipmentState,
@@ -79,4 +81,45 @@ def confirm_shipment_dispatch(request, shipment_id):
             "movimiento_creado": result.movement_id,
             "confirmado": True,
         }
+    )
+
+BOARD_PAGE_SIZE = 20
+
+
+@require_GET
+def active_shipments_board(request):
+    form = BoardFilterForm(request.GET)
+
+    shipments = Shipment.objects.active().select_related("company")
+
+    if form.is_valid():
+        data = form.cleaned_data
+        shipments = shipments.created_between(data["desde"], data["hasta"])
+        if data["estado"]:
+            shipments = shipments.filter(status=data["estado"])
+        if data["empresa"]:
+            shipments = shipments.filter(company=data["empresa"])
+        ordering = form.get_ordering()
+    else:
+        ordering = ORDERINGS[DEFAULT_ORDER]
+
+    shipments = shipments.order_by(*ordering)
+
+    paginator = Paginator(shipments, BOARD_PAGE_SIZE)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    # Querystring sin "page", para que los links de paginación conserven los filtros.
+    params = request.GET.copy()
+    params.pop("page", None)
+
+    return render(
+        request,
+        "shipments/board.html",
+        {
+            "form": form,
+            "page_obj": page_obj,
+            "shipments": page_obj.object_list,
+            "total": paginator.count,
+            "querystring": params.urlencode(),
+        },
     )

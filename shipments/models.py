@@ -1,5 +1,16 @@
 from django.db import models
 
+class ShipmentQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(status__in=Shipment.ACTIVE_STATUSES)
+
+    def created_between(self, start=None, end=None):
+        queryset = self
+        if start:
+            queryset = queryset.filter(created_at__date__gte=start)
+        if end:
+            queryset = queryset.filter(created_at__date__lte=end)
+        return queryset
 
 class Company(models.Model):
     name = models.CharField(max_length=200, unique=True)
@@ -10,7 +21,6 @@ class Company(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Shipment(models.Model):
     class Priority(models.IntegerChoices):
@@ -26,6 +36,13 @@ class Shipment(models.Model):
         OUT_FOR_DELIVERY = "out_for_delivery", "En reparto"
         DELIVERED = "delivered", "Entregado"
         FAILED = "failed", "Entrega fallida"
+
+    ACTIVE_STATUSES = (
+        Status.PENDING,
+        Status.IN_WAREHOUSE,
+        Status.DISPATCHED,
+        Status.OUT_FOR_DELIVERY,
+    )
 
     company = models.ForeignKey(
         Company,
@@ -46,6 +63,8 @@ class Shipment(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    objects = ShipmentQuerySet.as_manager()
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -56,7 +75,6 @@ class Shipment(models.Model):
 
     def __str__(self):
         return f"{self.code} ({self.company})"
-
 
 class Movement(models.Model):
     shipment = models.ForeignKey(

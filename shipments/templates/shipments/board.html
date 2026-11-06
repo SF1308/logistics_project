@@ -1,0 +1,95 @@
+{% extends "orders/base.html" %}
+
+{% block title %}Tablero de envíos activos{% endblock %}
+
+{% block content %}
+    <header class="page-heading">
+        <p class="eyebrow">Operación diaria</p>
+        <h1>Tablero de envíos activos</h1>
+        <p class="subtitle">Envíos que todavía requieren atención, según tus filtros.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="filters-title">
+        <h2 id="filters-title">Filtros</h2>
+
+        <form method="get" class="order-form">
+            {% if form.non_field_errors %}
+                <div class="field field-wide">
+                    {% for error in form.non_field_errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="field">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <a class="link-button" href="{% url 'shipments:active_board' %}">Limpiar</a>
+                <button type="submit">Filtrar</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="orders-section" aria-labelledby="board-title">
+        <div class="section-heading">
+            <div>
+                <h2 id="board-title">Envíos</h2>
+                <p>{{ total }} envío{{ total|pluralize }} activo{{ total|pluralize }}.</p>
+            </div>
+        </div>
+
+        {% if shipments %}
+            <div class="table-wrapper">
+                <table class="board-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Envío</th>
+                            <th scope="col">Empresa</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Prioridad</th>
+                            <th scope="col">Creado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for shipment in shipments %}
+                            <tr>
+                                <td>{{ shipment.code }}</td>
+                                <td>{{ shipment.company.name }}</td>
+                                <td><span class="status-badge">{{ shipment.get_status_display }}</span></td>
+                                <td>{{ shipment.get_priority_display }}</td>
+                                <td>{{ shipment.created_at|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if page_obj.has_other_pages %}
+                <nav class="pagination" aria-label="Paginación">
+                    {% if page_obj.has_previous %}
+                        <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">Anterior</a>
+                    {% endif %}
+
+                    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">Siguiente</a>
+                    {% endif %}
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <h3>Sin envíos activos</h3>
+                <p>No hay envíos que coincidan con los filtros.</p>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}
